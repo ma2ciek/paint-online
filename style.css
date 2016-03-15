@@ -1,0 +1,23 @@
+body {
+    margin: 0;
+    font-family: Arial;
+}
+
+canvas {
+    cursor: crosshair;
+}
+
+nav {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+button#clear {
+    display: inline-block;
+}
+
+label {
+    display: inline-block;
+    margin: 0 10px;
+}
