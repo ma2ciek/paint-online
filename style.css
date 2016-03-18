@@ -8,9 +8,12 @@ canvas {
 }
 
 nav {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+    background: #555;
+    padding: 0 10px;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    box-sizing: border-box;
 }
 
 button#clear {
@@ -20,4 +23,23 @@ button#clear {
 label {
     display: inline-block;
     margin: 0 10px;
+    color: white
+}
+
+div#tools {
+    display: inline-block;
+    
+}
+
+div#tools a {
+    color: #09f;
+    text-decoration: none;
+    border-radius: 5px;
+    border: 1px solid #09f;
+    padding: 3px 5px;
+}
+
+div#tools a.active {
+    color: #FFF;
+    background: #09f;
 }

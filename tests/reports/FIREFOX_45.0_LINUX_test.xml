@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="5"
+            failures="0"
+            tests="1">
+
+  <testsuite name="test"
+    errors="5" failures="0" hostname="" id="" package="test" skipped="0"
+    tests="1" time="14.15" timestamp="Fri, 18 Mar 2016 01:06:24 GMT">
+  
+    <testcase name="test" time="14.15" assertions="1">
+
+    
+    </testcase>
+      <system-err>
+         ERROR: Unable to locate element: &quot;#color&quot; using: css selector
+ ERROR: Unable to locate element: &quot;#line-size&quot; using: css selector
+ ERROR: Unable to locate element: &quot;#color&quot; using: css selector
+ ERROR: Unable to locate element: &quot;canvas&quot; using: css selector
+      </system-err>
+  
+  
+  </testsuite>
+</testsuites>
