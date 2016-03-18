@@ -1,28 +1,106 @@
-/// <reference path="ITool" />
-var Pen = (function () {
-    function Pen() {
-        this.lastPoint = null;
-        this.visibleModules = {
-            size: [1, 30],
-            color: true
+/// <reference path="_all.d.ts" />
+var ToolManager = (function () {
+    function ToolManager() {
+        this.tools = {
+            pen: new Pen(),
+            rubber: new Rubber(),
+            fill: new Filler()
         };
+        this.modules = {
+            color: new ColorManager(),
+            size: new SizeManager()
+        };
+        this.addEventListeners();
     }
-    Pen.prototype.start = function (ctx, config) {
-        this.lastPoint = config.point;
-        this.draw(ctx, config);
+    ToolManager.prototype.getActiveTool = function () {
+        return this.activeTool;
     };
-    Pen.prototype.draw = function (ctx, config) {
-        ctx.beginPath();
-        ctx.moveTo(this.lastPoint.x, this.lastPoint.y);
-        ctx.lineTo(config.point.x, config.point.y);
-        ctx.strokeStyle = config.color;
-        ctx.lineWidth = config.size;
-        ctx.stroke();
-        this.lastPoint = config.point;
+    ToolManager.prototype.action = function (actionName, ctx, config) {
+        var obj = {};
+        for (var c in config) {
+            obj[c] = config[c];
+        }
+        for (var moduleName in this.activeTool.visibleModules) {
+            obj[moduleName] = this.modules[moduleName].get();
+        }
+        this.activeTool[actionName] && this.activeTool[actionName](ctx, obj);
     };
-    return Pen;
+    ToolManager.prototype.addEventListeners = function () {
+        var self = this;
+        $('#tools a').on('click', setActiveTool);
+        function setActiveTool() {
+            $(this).siblings().removeClass('active');
+            $(this).addClass('active');
+            var toolName = $(this).attr('id');
+            self.activateTool(toolName);
+        }
+        setActiveTool.call($('#tools a').eq(0));
+    };
+    ToolManager.prototype.activateTool = function (toolName) {
+        this.activeTool = this.tools[toolName];
+        for (var moduleName in this.modules) {
+            this.modules[moduleName].hide();
+        }
+        for (var moduleName in this.activeTool.visibleModules) {
+            this.modules[moduleName].show();
+        }
+    };
+    return ToolManager;
 })();
-/// <reference path="ITool" />
+var ColorManager = (function () {
+    function ColorManager() {
+        this.color = '#000000';
+        this.$elem = $('#color');
+        this.$container = this.$elem.parent();
+        this.$elem.val(this.color);
+        this.addEventListeners();
+    }
+    ColorManager.prototype.addEventListeners = function () {
+        var self = this;
+        this.$elem.on('keyup', function () {
+            self.color = this.value;
+        });
+    };
+    ColorManager.prototype.get = function () {
+        return this.color;
+    };
+    ColorManager.prototype.show = function () {
+        this.$container.show();
+    };
+    ColorManager.prototype.hide = function () {
+        this.$container.hide();
+    };
+    return ColorManager;
+})();
+var SizeManager = (function () {
+    function SizeManager() {
+        this.size = 4;
+        this.$elem = $('#line-size');
+        this.$output = $('#line-size-output');
+        this.$container = this.$elem.parent();
+        this.$elem.val(this.size);
+        this.$output.val(this.size);
+        this.addEventListeners();
+    }
+    SizeManager.prototype.addEventListeners = function () {
+        var self = this;
+        this.$elem.on('input', function () {
+            self.size = +this.value;
+            self.$output.val(this.value);
+        });
+    };
+    SizeManager.prototype.get = function () {
+        return this.size;
+    };
+    SizeManager.prototype.show = function () {
+        this.$container.show();
+    };
+    SizeManager.prototype.hide = function () {
+        this.$container.hide();
+    };
+    return SizeManager;
+})();
+/// <reference path="../_all.d.ts" />
 var Filler = (function () {
     function Filler() {
         this.visibleModules = {
@@ -96,7 +174,31 @@ var Filler = (function () {
     };
     return Filler;
 })();
-/// <reference path="ITool" />
+/// <reference path="../_all.d.ts" />
+var Pen = (function () {
+    function Pen() {
+        this.lastPoint = null;
+        this.visibleModules = {
+            size: [1, 30],
+            color: true
+        };
+    }
+    Pen.prototype.start = function (ctx, config) {
+        this.lastPoint = config.point;
+        this.draw(ctx, config);
+    };
+    Pen.prototype.draw = function (ctx, config) {
+        ctx.beginPath();
+        ctx.moveTo(this.lastPoint.x, this.lastPoint.y);
+        ctx.lineTo(config.point.x, config.point.y);
+        ctx.strokeStyle = config.color;
+        ctx.lineWidth = config.size;
+        ctx.stroke();
+        this.lastPoint = config.point;
+    };
+    return Pen;
+})();
+/// <reference path="../_all.d.ts" />
 var Rubber = (function () {
     function Rubber() {
         this.lastPoint = null;
@@ -121,113 +223,7 @@ var Rubber = (function () {
     };
     return Rubber;
 })();
-var ColorManager = (function () {
-    function ColorManager() {
-        this.color = '#000000';
-        this.$elem = $('#color');
-        this.$container = this.$elem.parent();
-        this.$elem.val(this.color);
-        this.addEventListeners();
-    }
-    ColorManager.prototype.addEventListeners = function () {
-        var self = this;
-        this.$elem.on('keyup', function () {
-            self.color = this.value;
-        });
-    };
-    ColorManager.prototype.get = function () {
-        return this.color;
-    };
-    ColorManager.prototype.show = function () {
-        this.$container.show();
-    };
-    ColorManager.prototype.hide = function () {
-        this.$container.hide();
-    };
-    return ColorManager;
-})();
-var SizeManager = (function () {
-    function SizeManager() {
-        this.size = 4;
-        this.$elem = $('#line-size');
-        this.$output = $('#line-size-output');
-        this.$container = this.$elem.parent();
-        this.$elem.val(this.size);
-        this.$output.val(this.size);
-        this.addEventListeners();
-    }
-    SizeManager.prototype.addEventListeners = function () {
-        var self = this;
-        this.$elem.on('input', function () {
-            self.size = +this.value;
-            self.$output.val(this.value);
-        });
-    };
-    SizeManager.prototype.get = function () {
-        return this.size;
-    };
-    SizeManager.prototype.show = function () {
-        this.$container.show();
-    };
-    SizeManager.prototype.hide = function () {
-        this.$container.hide();
-    };
-    return SizeManager;
-})();
-/// <reference path="tools/Pen" />
-/// <reference path="tools/Filler" />
-/// <reference path="tools/Rubber" />
-/// <reference path="modules/ColorManager" />
-/// <reference path="modules/SizeManager" />
-var ToolManager = (function () {
-    function ToolManager() {
-        this.tools = {
-            pen: new Pen(),
-            rubber: new Rubber(),
-            fill: new Filler()
-        };
-        this.modules = {
-            color: new ColorManager(),
-            size: new SizeManager()
-        };
-        this.addEventListeners();
-    }
-    ToolManager.prototype.getActiveTool = function () {
-        return this.activeTool;
-    };
-    ToolManager.prototype.action = function (actionName, ctx, config) {
-        var obj = {};
-        for (var c in config) {
-            obj[c] = config[c];
-        }
-        for (var moduleName in this.activeTool.visibleModules) {
-            obj[moduleName] = this.modules[moduleName].get();
-        }
-        this.activeTool[actionName] && this.activeTool[actionName](ctx, obj);
-    };
-    ToolManager.prototype.addEventListeners = function () {
-        var self = this;
-        $('#tools a').on('click', setActiveTool);
-        function setActiveTool() {
-            $(this).siblings().removeClass('active');
-            $(this).addClass('active');
-            var toolName = $(this).attr('id');
-            self.activateTool(toolName);
-        }
-        setActiveTool.call($('#tools a').eq(0));
-    };
-    ToolManager.prototype.activateTool = function (toolName) {
-        this.activeTool = this.tools[toolName];
-        for (var moduleName in this.modules) {
-            this.modules[moduleName].hide();
-        }
-        for (var moduleName in this.activeTool.visibleModules) {
-            this.modules[moduleName].show();
-        }
-    };
-    return ToolManager;
-})();
-/// <reference path="ToolManager" />
+/// <reference path="_all.d.ts" />
 window.onload = function () {
     var canvas = $('canvas')[0];
     new Editor(canvas);

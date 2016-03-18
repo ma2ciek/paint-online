@@ -1,19 +1,10 @@
-/// <reference path="tools/Pen" />
-/// <reference path="tools/Filler" />
-/// <reference path="tools/Rubber" />
-/// <reference path="modules/ColorManager" />
-/// <reference path="modules/SizeManager" />
+/// <reference path="_all.d.ts" />
 
 interface IToolManagerConfig {
     point: IPoint,
     lastPoint: IPoint;
     width: number;
     height: number;
-}
-
-interface IPoint {
-    x: number;
-    y: number;
 }
 
 class ToolManager {

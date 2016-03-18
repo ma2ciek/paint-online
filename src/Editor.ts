@@ -1,4 +1,4 @@
-/// <reference path="ToolManager" />
+/// <reference path="_all.d.ts" />
 
 window.onload = function() {
     var canvas = <HTMLCanvasElement>$('canvas')[0];

@@ -1,4 +1,4 @@
-/// <reference path="ITool" />
+/// <reference path="../_all.d.ts" />
 
 class Pen implements ITool {
     lastPoint: IPoint = null;
