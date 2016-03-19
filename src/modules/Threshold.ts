@@ -1,24 +1,22 @@
 /// <reference path="../_all.d.ts" />
 
-class SizeManager extends EventEmitter {
-    private size = 4;
-    private $elem = $('#line-size');
-    private $output = $('#line-size-output');
+class Threshold extends EventEmitter {
+    private size = 5;
+    private $elem = $('#threshold');
     private $container = this.$elem.parent();
 
     constructor() {
         super();
         this.$elem.val(this.size);
-        this.$output.val(this.size);
         this.addEventListeners();
     }
 
     private addEventListeners() {
         var self = this;
         this.$elem.on('input', function() {
+            console.log(2);
             self.size = +this.value;
-            self.$output.val(this.value);
-            self.emit('change', {radius: +this.value});
+            self.emit('change', { threshold: +this.value });
         });
     }
 

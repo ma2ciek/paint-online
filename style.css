@@ -3,10 +3,6 @@ body {
     font-family: Arial;
 }
 
-canvas {
-    cursor: crosshair;
-}
-
 nav {
     background: #555;
     padding: 0 10px;
@@ -14,6 +10,10 @@ nav {
     height: 50px;
     line-height: 50px;
     box-sizing: border-box;
+}
+
+canvas {
+    background-image: url("img/transparent.jpg");
 }
 
 button#clear {

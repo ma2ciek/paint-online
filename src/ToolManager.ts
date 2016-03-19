@@ -2,7 +2,6 @@
 
 interface IToolManagerConfig {
     point: IPoint,
-    lastPoint: IPoint;
     width: number;
     height: number;
 }
@@ -15,13 +14,32 @@ class ToolManager {
     }
     private activeTool: ITool;
 
-    private modules = {
+    private modules: IModuleList = {
         color: new ColorManager(),
-        size: new SizeManager()
+        size: new SizeManager(),
+        threshold: new Threshold()
     }
 
     constructor() {
         this.addEventListeners();
+        this.watchModules();
+        this.connectToolsWidthModules();
+    }
+    
+    connectToolsWidthModules() {
+        for(var toolName in this.tools) {
+            var tool = this.tools[toolName];
+            for(var moduleName of tool.visibleModules) {
+                var module = this.modules[moduleName];
+                tool.modules[moduleName] = module;
+            }
+        }
+    }
+    
+    watchModules() {
+        for(var name in this.modules) {
+            this.modules[name].on('change', obj => this.activeTool.update(obj))
+        }
     }
 
     getActiveTool() {
@@ -29,17 +47,7 @@ class ToolManager {
     }
 
     action(actionName:string, ctx, config: IToolManagerConfig) {
-        var obj = {};
-
-        for (var c in config) {
-            obj[c] = config[c];
-        }
-        
-        for (var moduleName in this.activeTool.visibleModules) {
-            obj[moduleName] = this.modules[moduleName].get();
-        }
-        
-        this.activeTool[actionName] && this.activeTool[actionName](ctx, obj);
+        this.activeTool[actionName] && this.activeTool[actionName](ctx, config);
     }
 
     private addEventListeners() {
@@ -58,13 +66,14 @@ class ToolManager {
 
     private activateTool(toolName: string) {
         this.activeTool = this.tools[toolName];
+        this.activeTool.activate();
 
         for (var moduleName in this.modules) {
             this.modules[moduleName].hide();
         }
 
-        for (var moduleName in this.activeTool.visibleModules) {
-            this.modules[moduleName].show();
+        for (var modName of this.activeTool.visibleModules) {
+            this.modules[modName].show();
         }
     }
 }

@@ -8,8 +8,6 @@ window.onload = function() {
 class Editor {
     private ctx: CanvasRenderingContext2D;
     private canvas: HTMLCanvasElement;
-    private mouseDown = false;
-    private lastPoint: { x: number, y: number } = null;
     private toolManager = new ToolManager();
 
     constructor(canvas) {
@@ -49,44 +47,44 @@ class Editor {
 
         this.canvas.addEventListener('mousedown', function(e) {
             mouseDown = true;
-            self.action('start', e.layerX, e.layerY);            
+            self.action('start', self.getRelativePosition(e));
         });
 
         this.canvas.addEventListener('mouseup', function(e) {
             mouseDown = false;
-            self.lastPoint = null;
-            self.action('end', e.layerX, e.layerY);
+            self.action('end', self.getRelativePosition(e));
         });
 
         this.canvas.addEventListener('mousemove', function(e) {
-            var x = e.layerX
-            var y = e.layerY;
-
-            mouseDown && self.action('draw', x, y);
-            self.lastPoint = { x: x, y: y };
+            mouseDown && self.action('draw', self.getRelativePosition(e));
         });
 
         this.canvas.addEventListener('mouseleave', function(e) {
             mouseDown = false
         });
+        
+        // $(window).on('resize', () => this.handleResizeEvent);
+    }
+    
+    handleResizeEvent() {
+        var data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        this.resizeCanvas();
+        this.ctx.putImageData(data, 0, 0);
+    }
 
-        $(window).on('resize', function() {
-            var data = self.ctx.getImageData(0, 0, self.canvas.width, self.canvas.height);
-            self.resizeCanvas();
-            self.ctx.putImageData(data, 0, 0);
-        });
+    getRelativePosition(e: MouseEvent) {
+        var rect = (<HTMLCanvasElement>e.target).getBoundingClientRect();
+        return new util.Point(e.clientX - rect.left, e.clientY - rect.top);
     }
 
     resizeCanvas() {
-       
         this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight  - $('nav').outerHeight()
+        this.canvas.height = window.innerHeight - $('nav').outerHeight()
     }
 
-    action(actionName: string, x: number, y: number) {
+    action(actionName: string, point: util.IPoint) {
         this.toolManager.action(actionName, this.ctx, {
-            point: { x, y },
-            lastPoint: this.lastPoint,
+            point,
             width: this.canvas.width,
             height: this.canvas.height
         });
