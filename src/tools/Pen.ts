@@ -19,12 +19,13 @@ class Pen implements ITool {
     }
 
     draw(ctx, config) {
+        // var distance = Math.pow(util.Point.distance(config.point, this.lastPoint) + 1, 1/5);
+        
         ctx.beginPath();
         ctx.moveTo(this.lastPoint.x, this.lastPoint.y);
         ctx.lineTo(config.point.x, config.point.y);
         ctx.strokeStyle = this.modules.color.get();
-        ctx.lineWidth = this.modules.size.get();
-        console.log(ctx.lineWidth);
+        ctx.lineWidth = this.modules.size.get() 
         ctx.closePath();
         ctx.stroke();
         this.lastPoint = config.point;

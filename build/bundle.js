@@ -10,6 +10,7 @@ var Editor = (function () {
         this.initCanvas();
         this.initButtons();
         this.addEventListeners();
+        this.history = new HistoryManager(canvas);
     }
     Editor.prototype.initCanvas = function () {
         this.resizeCanvas();
@@ -25,6 +26,7 @@ var Editor = (function () {
     };
     Editor.prototype.clear = function () {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.history.add();
     };
     Editor.prototype.save = function () {
         var data = this.canvas.toDataURL();
@@ -40,6 +42,7 @@ var Editor = (function () {
         this.canvas.addEventListener('mouseup', function (e) {
             mouseDown = false;
             self.action('end', self.getRelativePosition(e));
+            self.history.add();
         });
         this.canvas.addEventListener('mousemove', function (e) {
             mouseDown && self.action('draw', self.getRelativePosition(e));
@@ -47,20 +50,14 @@ var Editor = (function () {
         this.canvas.addEventListener('mouseleave', function (e) {
             mouseDown = false;
         });
-        // $(window).on('resize', () => this.handleResizeEvent);
-    };
-    Editor.prototype.handleResizeEvent = function () {
-        var data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        this.resizeCanvas();
-        this.ctx.putImageData(data, 0, 0);
     };
     Editor.prototype.getRelativePosition = function (e) {
         var rect = e.target.getBoundingClientRect();
         return new util.Point(e.clientX - rect.left, e.clientY - rect.top);
     };
     Editor.prototype.resizeCanvas = function () {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight - $('nav').outerHeight();
+        this.canvas.width = 1000;
+        this.canvas.height = 500;
     };
     Editor.prototype.action = function (actionName, point) {
         this.toolManager.action(actionName, this.ctx, {
@@ -156,10 +153,16 @@ var EventEmitter = (function () {
 })();
 var util;
 (function (util) {
-    function Point(x, y) {
-        this.x = x;
-        this.y = y;
-    }
+    var Point = (function () {
+        function Point(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+        Point.distance = function (p1, p2) {
+            return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+        };
+        return Point;
+    })();
     util.Point = Point;
 })(util || (util = {}));
 /// <reference path="../_all.d.ts" />
@@ -332,12 +335,12 @@ var Pen = (function () {
         this.lastPoint = config.point;
     };
     Pen.prototype.draw = function (ctx, config) {
+        // var distance = Math.pow(util.Point.distance(config.point, this.lastPoint) + 1, 1/5);
         ctx.beginPath();
         ctx.moveTo(this.lastPoint.x, this.lastPoint.y);
         ctx.lineTo(config.point.x, config.point.y);
         ctx.strokeStyle = this.modules.color.get();
         ctx.lineWidth = this.modules.size.get();
-        console.log(ctx.lineWidth);
         ctx.closePath();
         ctx.stroke();
         this.lastPoint = config.point;
@@ -435,6 +438,46 @@ var CustomCursor = (function () {
         document.body.style.cursor = url;
     };
     return CustomCursor;
+})();
+var HistoryManager = (function () {
+    function HistoryManager(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.clear();
+        this.addEventListeners();
+    }
+    HistoryManager.prototype.clear = function () {
+        this.list = [];
+        this.index = 0;
+        this.add();
+    };
+    HistoryManager.prototype.addEventListeners = function () {
+        var _this = this;
+        $('#undo').on('click', function () { return _this.undo(); });
+        $('#redo').on('click', function () { return _this.redo(); });
+    };
+    HistoryManager.prototype.undo = function () {
+        if (this.index < 2)
+            return;
+        this.go(-1);
+    };
+    HistoryManager.prototype.redo = function () {
+        if (this.index >= this.list.length)
+            return;
+        this.go(+1);
+    };
+    HistoryManager.prototype.go = function (direction) {
+        this.index += direction;
+        var img = this.list[this.index - 1];
+        this.ctx.putImageData(img, 0, 0);
+    };
+    HistoryManager.prototype.add = function () {
+        this.list.splice(this.index);
+        var img = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        this.list.push(img);
+        this.index++;
+    };
+    return HistoryManager;
 })();
 /// <reference path="../_all.d.ts" />
 var RecursiveFiller = (function () {

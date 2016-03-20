@@ -9,12 +9,14 @@ class Editor {
     private ctx: CanvasRenderingContext2D;
     private canvas: HTMLCanvasElement;
     private toolManager = new ToolManager();
+    private history: HistoryManager;
 
     constructor(canvas) {
         this.canvas = canvas;
         this.initCanvas();
         this.initButtons();
         this.addEventListeners();
+        this.history = new HistoryManager(canvas);
     }
 
     initCanvas() {
@@ -34,6 +36,7 @@ class Editor {
 
     clear() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.history.add();
     }
 
     save() {
@@ -53,6 +56,7 @@ class Editor {
         this.canvas.addEventListener('mouseup', function(e) {
             mouseDown = false;
             self.action('end', self.getRelativePosition(e));
+            self.history.add();
         });
 
         this.canvas.addEventListener('mousemove', function(e) {
@@ -62,14 +66,6 @@ class Editor {
         this.canvas.addEventListener('mouseleave', function(e) {
             mouseDown = false
         });
-        
-        // $(window).on('resize', () => this.handleResizeEvent);
-    }
-    
-    handleResizeEvent() {
-        var data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        this.resizeCanvas();
-        this.ctx.putImageData(data, 0, 0);
     }
 
     getRelativePosition(e: MouseEvent) {
@@ -78,8 +74,8 @@ class Editor {
     }
 
     resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight - $('nav').outerHeight()
+        this.canvas.width = 1000;
+        this.canvas.height = 500;
     }
 
     action(actionName: string, point: util.IPoint) {
