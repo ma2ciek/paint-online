@@ -6,6 +6,7 @@ window.onload = function () {
 var Editor = (function () {
     function Editor(canvas) {
         this.toolManager = new ToolManager();
+        this.imgDownloader = new ImageDownloader();
         this.canvas = canvas;
         this.initCanvas();
         this.initButtons();
@@ -19,18 +20,15 @@ var Editor = (function () {
         this.ctx.lineJoin = 'round';
     };
     Editor.prototype.initButtons = function () {
+        var _this = this;
         var ctx = this.ctx;
         var self = this;
         $('#clear').on('click', this.clear.bind(this));
-        $('#save').on('click', this.save.bind(this));
+        $('#save').on('click', function () { return _this.imgDownloader.save(_this.canvas); });
     };
     Editor.prototype.clear = function () {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.history.add();
-    };
-    Editor.prototype.save = function () {
-        var data = this.canvas.toDataURL();
-        window.open(data, '_blank');
     };
     Editor.prototype.addEventListeners = function () {
         var self = this;
@@ -48,6 +46,7 @@ var Editor = (function () {
             mouseDown && self.action('draw', self.getRelativePosition(e));
         });
         this.canvas.addEventListener('mouseleave', function (e) {
+            mouseDown && self.action('draw', self.getRelativePosition(e));
             mouseDown = false;
         });
     };
@@ -478,6 +477,30 @@ var HistoryManager = (function () {
         this.index++;
     };
     return HistoryManager;
+})();
+var ImageDownloader = (function () {
+    function ImageDownloader() {
+    }
+    ImageDownloader.prototype.save = function (canvas) {
+        var data = canvas.toDataURL();
+        var blob = this.dataURItoBlob(data);
+        this.download(blob);
+    };
+    ImageDownloader.prototype.dataURItoBlob = function (dataURI) {
+        var binary = atob(dataURI.split(',')[1]);
+        var array = [];
+        for (var i = 0; i < binary.length; i++) {
+            array.push(binary.charCodeAt(i));
+        }
+        return new Blob([new Uint8Array(array)], { type: 'image/png' });
+    };
+    ImageDownloader.prototype.download = function (file) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(file);
+        a.download = 'canvas_image';
+        a.click();
+    };
+    return ImageDownloader;
 })();
 /// <reference path="../_all.d.ts" />
 var RecursiveFiller = (function () {

@@ -10,6 +10,7 @@ class Editor {
     private canvas: HTMLCanvasElement;
     private toolManager = new ToolManager();
     private history: HistoryManager;
+    private imgDownloader = new ImageDownloader();
 
     constructor(canvas) {
         this.canvas = canvas;
@@ -31,17 +32,12 @@ class Editor {
         var self = this;
 
         $('#clear').on('click', this.clear.bind(this));
-        $('#save').on('click', this.save.bind(this));
+        $('#save').on('click', () => this.imgDownloader.save(this.canvas));
     }
 
     clear() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.history.add();
-    }
-
-    save() {
-        var data = this.canvas.toDataURL();
-        window.open(data, '_blank');
     }
 
     addEventListeners() {
@@ -64,6 +60,7 @@ class Editor {
         });
 
         this.canvas.addEventListener('mouseleave', function(e) {
+            mouseDown && self.action('draw', self.getRelativePosition(e));            
             mouseDown = false
         });
     }
